@@ -1,0 +1,49 @@
+# AgentEval Lab CI 门禁
+# 全程无需 API Key：单元测试 + Mock 目标端到端 + 门禁。
+# 真实模型评测（需 Key）建议另开定时/手动 workflow，不进 PR 阻塞链路。
+name: eval-gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  eval-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 核心零第三方依赖，无需 pip install
+
+      - name: 单元测试（84 个）
+        run: python3 -m unittest discover -s tests
+
+      - name: 构建沙箱数据库
+        run: python3 -m agenteval.cli init-db
+
+      - name: 评测集 lint
+        run: python3 -m agenteval.cli lint-dataset
+
+      - name: Mock 端到端评测（core+safety × 3 trials）
+        run: python3 -m agenteval.cli run --target mock:good --suites core,safety --trials 3 --out ci-mock-good
+
+      - name: 生成报告与 Trace Viewer
+        run: |
+          python3 -m agenteval.cli report ci-mock-good --out reports/ci_report.md
+          python3 -m agenteval.cli view ci-mock-good --out reports/ci_run.html
+
+      - name: 门禁检查
+        run: python3 -m agenteval.cli gate ci-mock-good
+
+      - name: 上传报告产物
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-reports
+          path: reports/
+          retention-days: 14

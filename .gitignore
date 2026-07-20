@@ -1,0 +1,15 @@
+# 数据与运行产物（沙箱库 / 评测运行输出）
+data/
+runs/*
+!runs/.gitkeep
+
+# 密钥（.env.example 可提交，真实 .env 永不提交）
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 系统
+.DS_Store

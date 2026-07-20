@@ -1,0 +1,15 @@
+{
+  "_comment": "运行默认值：cli run 未显式传参时采用。均为框架层参数，与具体被测对象无关。",
+  "trials": 3,
+  "max_steps": 10,
+  "max_tool_errors": 2,
+  "temperature": 0.0,
+  "timeout_s": 60,
+  "max_retries": 3,
+  "run_sql_row_limit": 200,
+  "judge": {
+    "pass_score": 0.75,
+    "max_tokens": 800,
+    "temperature": 0.0
+  }
+}

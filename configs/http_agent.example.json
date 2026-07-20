@@ -1,0 +1,18 @@
+{
+  "_comment": "通用 HTTP Target 配置示例。复制为 http_agent.local.json 并按实际修改；headers 中 ${VAR} 会从环境变量（含 .env）展开。用法：python3 -m agenteval.cli run --target http --target-config configs/http_agent.local.json",
+  "name": "http",
+  "url": "https://example.com/api/agent/chat",
+  "method": "POST",
+  "headers": {
+    "Authorization": "Bearer ${HTTP_AGENT_TOKEN}"
+  },
+  "request_template": {
+    "query": "{{question}}",
+    "context": {"as_of": "{{as_of}}"}
+  },
+  "response_mapping": {
+    "answer": "data.answer",
+    "messages": "data.steps"
+  },
+  "timeout_s": 60
+}

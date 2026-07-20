@@ -1,0 +1,17 @@
+{
+  "_comment": "模型注册表：名称 -> OpenAI 兼容接入与单价（美元 / 1M tokens，供成本折算）。mock 条目价格为 0，支撑无 Key 演示与 CI。",
+  "models": {
+    "minimax-m1": {
+      "base_url": "https://api.minimaxi.com/v1",
+      "model": "MiniMax-M1",
+      "prompt_price_per_1m": 1.0,
+      "completion_price_per_1m": 4.0
+    },
+    "mock": {
+      "base_url": null,
+      "model": "mock",
+      "prompt_price_per_1m": 0.0,
+      "completion_price_per_1m": 0.0
+    }
+  }
+}

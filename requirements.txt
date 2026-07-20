@@ -1,0 +1,5 @@
+# AgentEval Lab 运行时**零第三方依赖**：框架只用 Python 标准库（要求 Python 3.11+）。
+# 本文件存在的意义是明确声明这一点，并列出可选增强。
+#
+# 可选：报告图表（agenteval/core/report.py 会 try/except 静默降级为纯表格，不装不影响任何功能）
+# matplotlib>=3.7
