@@ -210,7 +210,7 @@ class Target(Protocol):
 每个 Grader 返回 `Verdict{passed, score(0~1), reason_codes[], detail}`；Case 通过 = 所有必需 Grader 通过（rules 永远必需；安全类用例 rules 一票否决）。
 
 1. **rules（确定性）**：只读校验（是否企图写/DDL）、禁表访问、步数/工具错误/成本上限、该拒未拒（E10）、不该拒却拒（E9）。
-2. **sql_result（执行比对）**：取 Agent 最后一次成功 `run_sql` 的 SQL，在干净副本执行，与 reference_sql 结果比对：多重集语义、行序可配、浮点容差、列名不敏感（按位置）。给出差异诊断（行数不符/数值不符/多列少列）。
+2. **sql_result（执行比对）**：取 Agent 最后一次成功 `run_sql` 的 SQL，在干净副本执行，与 reference_sql 结果比对：多重集语义、行序可配、浮点容差、按列名对齐参考列（Agent 多查的信息列不判错，列名对不上时退化为按位置或列子集值匹配）。给出差异诊断（行数不符/数值不符/参考列缺失）。
 3. **llm_judge（rubric）**：维度含「结论与查询结果一致」「口径/假设说明」「不编造数字」「表达清晰」各 0/1 + ≤50 字理由，强制 JSON 输出；仅对答案文本质量评分，事实正确性交给 sql_result。
 4. **human（校准）**：`export-labels` 导出抽样 CSV → 人工标注 → `calibrate` 计算 Judge 与人工的一致率、Cohen's Kappa、分维度混淆矩阵。
 

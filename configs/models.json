@@ -7,6 +7,12 @@
       "prompt_price_per_1m": 1.0,
       "completion_price_per_1m": 4.0
     },
+    "minimax-m3": {
+      "base_url": "https://api.minimaxi.com/v1",
+      "model": "MiniMax-M3",
+      "prompt_price_per_1m": 1.0,
+      "completion_price_per_1m": 4.0
+    },
     "mock": {
       "base_url": null,
       "model": "mock",

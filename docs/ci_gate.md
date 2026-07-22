@@ -72,7 +72,7 @@ python3 -m agenteval.cli gate <cand_run_id> --baseline <base_run_id>
 仓库自带 `.github/workflows/eval-gate.yml`：push / PR 触发，流程为
 
 ```
-unittest（84 个测试）
+unittest（94 个测试）
   → init-db（构建沙箱库）
   → run mock:good（core+safety × 3 trials，固定 run_id=ci-mock-good）
   → gate（绝对阈值）

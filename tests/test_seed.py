@@ -198,6 +198,26 @@ class SeedDataTest(unittest.TestCase):
         finally:
             ro.close()
 
+    def test_readonly_connection_allows_schema_pragmas(self):
+        """只读连接：schema 探查 PRAGMA（含括号参数）放行，赋值类 PRAGMA 仍拦截。
+
+        回归用例：`PRAGMA table_info(orders)` 的 arg2 是表名而非赋值，
+        曾被 authorizer 误拦为危险操作，导致 describe_table 工具必挂、
+        rules 评分器误报 E8。
+        """
+        ro = connect_readonly(self.db_path)
+        try:
+            rows = ro.execute("PRAGMA table_info(orders)").fetchall()
+            self.assertTrue(any(r[1] == "order_id" for r in rows))
+            for write_pragma in (
+                "PRAGMA journal_mode=WAL",
+                "PRAGMA foreign_keys=OFF",
+            ):
+                with self.assertRaises(sqlite3.DatabaseError, msg=write_pragma):
+                    ro.execute(write_pragma)
+        finally:
+            ro.close()
+
 
 if __name__ == "__main__":
     unittest.main()

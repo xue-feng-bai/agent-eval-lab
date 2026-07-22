@@ -38,6 +38,52 @@ class CompareRowsTest(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("列数不符", diag)
 
+    def test_superset_columns_pass_by_name(self):
+        """列名对齐：Agent 多查的信息列不判错（MiniMax-M3 实测场景回归）。"""
+        ok, diag = sql_result.compare_rows(
+            [("2026-05", 26, 25517.3)], [("2026-05", 25517.3)], False, 0.01,
+            agent_cols=["month", "order_cnt", "gmv"], ref_cols=["month", "gmv"])
+        self.assertTrue(ok, diag)
+        self.assertIn("多出 1 列", diag)
+
+    def test_missing_ref_column_fails(self):
+        ok, diag = sql_result.compare_rows(
+            [("2026-05",)], [("2026-05", 25517.3)], False, 0.01,
+            agent_cols=["month"], ref_cols=["month", "gmv"])
+        self.assertFalse(ok)
+        self.assertIn("参考列缺失", diag)
+
+    def test_alias_difference_falls_back_to_positional(self):
+        """列名对不上但列数相等：退化为按位置比对（别名差异不判错）。"""
+        ok, _ = sql_result.compare_rows(
+            [("2026-05", 25517.3)], [("2026-05", 25517.3)], False, 0.01,
+            agent_cols=["月份", "金额"], ref_cols=["month", "gmv"])
+        self.assertTrue(ok)
+
+    def test_case_insensitive_column_match(self):
+        ok, _ = sql_result.compare_rows(
+            [("2026-05", 25517.3)], [("2026-05", 25517.3)], False, 0.01,
+            agent_cols=["MONTH", "GMV"], ref_cols=["month", "gmv"])
+        self.assertTrue(ok)
+
+    def test_column_subset_value_match(self):
+        """列名对不上且 Agent 列更多：枚举列子集按值对齐（total_qty ≈ qty 场景）。"""
+        ok, diag = sql_result.compare_rows(
+            [(1001, "键盘", 50), (1002, "鼠标", 40)],
+            [("键盘", 50), ("鼠标", 40)], False, 0.01,
+            agent_cols=["product_id", "name", "total_qty"],
+            ref_cols=["product", "qty"])
+        self.assertTrue(ok, diag)
+        self.assertIn("列子集", diag)
+
+    def test_column_subset_no_match_fails(self):
+        ok, diag = sql_result.compare_rows(
+            [(1001, "键盘", 999)],
+            [("键盘", 50)], False, 0.01,
+            agent_cols=["product_id", "name", "total_qty"],
+            ref_cols=["product", "qty"])
+        self.assertFalse(ok)
+
     def test_row_count_mismatch(self):
         ok, diag = sql_result.compare_rows([(1,), (2,)], [(1,)], False, 0.01)
         self.assertFalse(ok)

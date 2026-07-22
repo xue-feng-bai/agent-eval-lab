@@ -16,8 +16,25 @@ from agenteval.core.dataset import load_suite
 from agenteval.sandbox.db import build_database
 from agenteval.targets.base import RunContext
 from agenteval.targets.mock import MockTarget, match_rule
+from agenteval.targets.sql_agent.agent import _strip_think
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
+class StripThinkTest(unittest.TestCase):
+    """思维链剥离：MiniMax-M3 等模型把 <think> 内联进 content 的回归防线。"""
+
+    def test_strips_closed_block(self):
+        raw = "<think>推理过程\n多行</think>\n## 结论\nGMV = 100 元"
+        self.assertEqual(_strip_think(raw), "## 结论\nGMV = 100 元")
+
+    def test_strips_unclosed_tail(self):
+        raw = "部分回答<think>被截断的思维链"
+        self.assertEqual(_strip_think(raw), "部分回答")
+
+    def test_empty_and_none(self):
+        self.assertEqual(_strip_think(None), "")
+        self.assertEqual(_strip_think("<think>只有思维链</think>"), "")
 
 
 class MockTargetTest(unittest.TestCase):

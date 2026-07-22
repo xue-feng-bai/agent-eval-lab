@@ -104,6 +104,16 @@ _ALLOWED_ACTIONS = frozenset(
 # 低版本兼容：SQLITE_PRAGMA 常量并非所有 Python 都暴露
 _SQLITE_PRAGMA = getattr(sqlite3, "SQLITE_PRAGMA", 19)
 
+# 只读 PRAGMA 白名单：这些 PRAGMA 带括号参数时（如 table_info(orders)）
+# authorizer 收到的 arg2 是表名而非赋值，必须按名称放行，否则 describe_table
+# 这类 schema 探查工具会被误拦成"危险操作"。赋值类 PRAGMA（journal_mode=WAL）
+# 不在白名单内，依然拒绝；URI mode=ro 是兜底层。
+_READONLY_PRAGMAS = frozenset({
+    "table_info", "table_xinfo", "table_list",
+    "index_list", "index_info", "index_xinfo",
+    "foreign_key_list",
+})
+
 
 def build_database(path: str | Path) -> Path:
     """在 path 重建种子库（已存在则先删除），返回库文件路径。"""
@@ -144,12 +154,16 @@ def make_trial_copy(master_path: str | Path) -> Path:
 def _readonly_authorizer(action, arg1, arg2, db_name, source):
     """SQLite authorizer：白名单之外的写/DDL 动作一律拒绝。
 
-    PRAGMA 仅放行"读取"形式（arg2 为 None），如 `PRAGMA table_info`；
-    带赋值的形式（arg2 非 None，如 `PRAGMA journal_mode=WAL`）视为写，拒绝。
+    PRAGMA 放行两类：(1) 无参读取形式（arg2 为 None），如 `PRAGMA table_list`；
+    (2) 白名单内的 schema 探查 PRAGMA（arg1 命中 _READONLY_PRAGMAS），
+    其括号参数（arg2）是表名而非赋值。赋值类 PRAGMA（如 journal_mode=WAL）
+    一律视为写，拒绝。
     """
     if action in _ALLOWED_ACTIONS:
         return sqlite3.SQLITE_OK
     if action == _SQLITE_PRAGMA and arg2 is None:
+        return sqlite3.SQLITE_OK
+    if action == _SQLITE_PRAGMA and (arg1 or "").lower() in _READONLY_PRAGMAS:
         return sqlite3.SQLITE_OK
     return sqlite3.SQLITE_DENY
 

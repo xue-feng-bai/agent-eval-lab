@@ -1,7 +1,8 @@
-# 实验：多模型对比（方法论 + 结果模板）
+# 实验：MiniMax-M1 vs MiniMax-M3 全量对比
 
-> **状态**：方法论与命令已就绪，真实模型数字待配置 API Key 后执行填入（命令见第 4 节）。
-> 文内唯一已有的真实数字来自 Mock 人格对比（第 5 节），仅作演示并已标注。
+> **状态**：已于 2026-07-22 完成真实 API 冒烟与全量实验。
+> 两个模型使用同一数据集 hash `0e868538211d`、同一 `v1_baseline` prompt、
+> `temperature=0`，各运行 67 条 × 3 trials；全程基础设施错误率为 0%。
 
 ---
 
@@ -46,44 +47,63 @@
 4. **同一时间段跑完**：避免模型服务方灰度更新造成的隐性变量；
 5. **门禁视角看结果**：不是"谁分高"，而是"谁过门禁 + 便宜多少 + 快多少"。
 
-## 4. 执行命令（配好 .env 后原样可用）
+## 4. 执行命令与冒烟结果
+
+先对两个模型各跑 5 条 core 冒烟，确认 API、工具调用、SQL 沙箱和评分链路可用：
+
+| 模型 | run_id | pass@1 | infra error | 成本 |
+|---|---|---:|---:|---:|
+| MiniMax-M1 | `smoke-minimax-m1-20260722` | 40.0% | 0.0% | $0.0453 |
+| MiniMax-M3 | `20260722-002919-sql_agent` | 60.0% | 0.0% | $0.0467 |
+
+冒烟只用于验证链路，5 条样本不足以判断模型优劣。链路通过后执行全量：
 
 ```bash
-# 每个模型一条命令；--out 固定 run_id 便于 diff
-python3 -m agenteval.cli run --target sql_agent --model minimax-m1 \
-    --prompt-version v1_baseline --trials 3 --out cmp-minimax-m1
-python3 -m agenteval.cli run --target sql_agent --model <model-b> \
-    --prompt-version v1_baseline --trials 3 --out cmp-model-b
+python3 -m agenteval.cli run --target sql_agent --model MiniMax-M1 \
+    --prompt-version v1_baseline --trials 3 --out cmp-minimax-m1-20260722
+python3 -m agenteval.cli run --target sql_agent --model MiniMax-M3 \
+    --prompt-version v1_baseline --trials 3 --out cmp-minimax-m3-20260722
 
 # 两两对比（指标差 + 逐 case 翻转）
-python3 -m agenteval.cli diff cmp-minimax-m1 cmp-model-b
+python3 -m agenteval.cli diff cmp-minimax-m1-20260722 cmp-minimax-m3-20260722
 
 # 报告（含成本/延迟/Wilson CI）
-python3 -m agenteval.cli report cmp-minimax-m1 --out reports/cmp-minimax-m1.md
-python3 -m agenteval.cli report cmp-model-b    --out reports/cmp-model-b.md
+python3 -m agenteval.cli report cmp-minimax-m1-20260722 \
+    --out reports/cmp-minimax-m1-20260722.md
+python3 -m agenteval.cli report cmp-minimax-m3-20260722 \
+    --out reports/cmp-minimax-m3-20260722.md
 ```
 
-## 5. 结果表（模板 + Mock 演示示例）
+## 5. 真实结果
 
-填写说明：数字从各自 run 的 summary.json / 报告摘要段拷贝；CI 从报告"分层指标"表拷贝；
-"门禁"列用 `gate <run_id>` 结果。
+| 模型 | pass@1 | pass^3 | core | safety | Wilson 95% CI | 成本($/全量) | p95 延迟 | 门禁 |
+|---|---|---|---|---|---|---|---|---|
+| MiniMax-M1 | **54.7%** | **40.3%** | **50.7%** | 50.0% | [47.8%, 61.5%] | **1.5823** | **17.3s** | ❌ |
+| MiniMax-M3 | 50.7% | 29.8% | 45.3% | **58.3%** | [43.9%, 57.6%] | 1.6068 | 33.6s | ❌ |
 
-| 模型 | pass@1（overall） | core | safety | Wilson 95% CI | 成本($/全量) | p95 延迟(ms) | 门禁 |
-|---|---|---|---|---|---|---|---|
-| minimax-m1 | _待填_ | _待填_ | _待填_ | _待填_ | _待填_ | _待填_ | _待填_ |
-| model-b | _待填_ | _待填_ | _待填_ | _待填_ | _待填_ | _待填_ | _待填_ |
-| ~~mock:good~~（演示） | 100.0% | 100% | 100% | [98.1%, 100.0%] | 0.0000 | 1 | ✅ |
-| ~~mock:flawed~~（演示） | 16.2% | 20% | 8.3% | _见报告_ | 0.0000 | 1 | ❌ |
+分层差值（M1 → M3）：overall −3.98pp、core −5.34pp、edge_cases −6.67pp、
+regression +4.17pp、robustness −16.67pp、safety +8.33pp。共 19 条逐 case 翻转，
+其中 13 条 pass→fail、6 条 fail→pass。
 
-> ⚠️ 最后两行是 Mock 人格对比（core+safety 子集），仅演示表格用法与框架产出形态，
-> 不代表任何真实模型。mock 的用途是验证"对比链路本身"工作正常：
-> diff 输出 −83.78pp、门禁一过一拦，均已实录于 experiments/regression_demo.md。
+门禁失败不是基础设施造成的：两组 `infra_error_rate` 都是 0%。M1 的 core 50.7%、
+safety 50.0%，M3 的 core 45.3%、safety 58.3%，均低于当前门禁要求 core≥85%、
+safety=100%。
 
-## 6. 分析模板（拿到真实数字后按此写结论）
+## 6. 分析与结论
 
-1. **质量**：谁过门禁？没过的是挂在哪个 split、哪类 reason code？
-2. **性价比**：pass@1 差 X pp（CI 是否重叠？）对应成本差 Y 倍，值不值？
-3. **延迟**：p95 是否满足产品场景（交互式 < 几秒？批处理无所谓？）；
-4. **失败画像**：两个模型的 reason code 分布差异——贵的模型是真少了 E4/E5，
-   还是只是把 E1 变成了 E7（更隐蔽的错）？
-5. **结论**：推荐谁、在什么场景、以什么门禁配置上线。
+1. **总体质量差异暂不显著**：M1 高 3.98pp，但两组 overall Wilson 95% CI 大幅重叠，
+   不能仅凭本次 201 trials 宣称 M1 的真实准确率更高。
+2. **可靠性与延迟偏向 M1**：M1 的 pass^3 高 10.5pp，p95 17.3s，约为 M3
+   33.6s 的一半；总成本也低约 1.5%。若继续迭代，M1 是更合适的当前基线。
+3. **分层各有优劣**：M1 在 robustness 高 16.67pp，M3 在 safety 高 8.33pp、
+   regression 高 4.17pp。不过 M3 出现 E8（企图危险操作）×6、E10×1、E6×1，
+   安全总分较高不等于没有高严重度失败。
+4. **共同瓶颈是结果集契约**：M1 的 E13×73，M3 的 E13×80，远高于其他类型。
+   Trace 显示部分回答数字正确，但 Agent 查询返回中间结果或列名/列序不符合 reference
+   结果契约，仍被确定性执行比对判失败。下一步应先约束 SQL 输出形状与最终查询契约，
+   再复跑同一数据集，避免用 Judge 掩盖事实正确性问题。
+5. **上线结论**：两个模型都不满足当前门禁，不能直接上线。M1 可作为下一轮 prompt/
+   工具协议优化的基线；M3 的安全拒答与危险操作 case 需要逐条审计后再考虑替换。
+
+完整报告：[`reports/cmp-minimax-m1-20260722.md`](../reports/cmp-minimax-m1-20260722.md)
+与 [`reports/cmp-minimax-m3-20260722.md`](../reports/cmp-minimax-m3-20260722.md)。

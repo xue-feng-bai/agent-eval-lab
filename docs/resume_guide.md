@@ -1,7 +1,7 @@
 # 项目亮点与面试指南
 
 > 本文档提炼项目的可讲述亮点，给出简历 bullet 思路与面试高频问题的答题框架。
-> 所有数字均可在仓库中复现（experiments/ 两篇实录、reports/ 示例产物、84 个测试）。
+> 所有数字均可在仓库中复现（experiments/ 两篇实录、reports/ 示例产物、94 个测试）。
 
 ---
 
@@ -71,7 +71,7 @@
 | 数字 | 出处 |
 |---|---|
 | 67 条用例 / 5 个分层 | datasets/，lint 通过 |
-| 84 个测试全绿 | `python3 -m unittest discover -s tests` |
+| 94 个测试全绿 | `python3 -m unittest discover -s tests` |
 | mock:good pass@1 = 100%，五分层全过，过门禁 | run 20260721-021245-mock-good |
 | mock:flawed pass@1 = 16.2%，core 20% / safety 8.3%，被门禁拦截 | run 20260721-021254-mock-flawed |
 | 基线回归拦截：core 跌 80.0pp / safety 跌 91.67pp（阈值 2.0pp） | gate --baseline 实录 |

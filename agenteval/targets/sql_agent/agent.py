@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 from pathlib import Path
 
@@ -18,6 +19,21 @@ from agenteval.targets.base import RunContext, TargetResult
 from agenteval.targets.sql_agent.tools import TOOL_SCHEMAS, ToolExecutor
 
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
+
+# 思维链模型（如 MiniMax-M3）会把 <think>...</think> 内联进 content；
+# 思维链是过程不是答案，记录 final_answer 与回灌消息前剥离，
+# 避免污染 Trace、Judge 评分与"用户可见回答"。
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
+_THINK_UNCLOSED_RE = re.compile(r"<think>.*\Z", re.DOTALL)
+
+
+def _strip_think(content: str | None) -> str:
+    """剥离 content 中的思维链片段（含未闭合的尾部 <think>）。"""
+    if not content:
+        return ""
+    text = _THINK_RE.sub("", content)
+    text = _THINK_UNCLOSED_RE.sub("", text)
+    return text.strip()
 
 
 def load_prompt(prompt_version: str) -> str:
@@ -49,9 +65,10 @@ class SqlAgentTarget:
         else:
             from agenteval.llm.client import LLMClient
             llm_cfg = cfg.get_llm_config("agent")
+            self.model = model or llm_cfg["model"]  # 回写解析结果，成本折算依赖它
             self.llm = LLMClient(
                 api_key=llm_cfg["api_key"], base_url=llm_cfg["base_url"],
-                model=model or llm_cfg["model"],
+                model=self.model,
                 timeout_s=float(self.config.get("timeout_s", 60)),
                 max_retries=int(self.config.get("max_retries", 3)),
             )
@@ -90,7 +107,7 @@ class SqlAgentTarget:
             if resp.tool_calls:
                 messages.append({
                     "role": "assistant",
-                    "content": resp.content or "",
+                    "content": _strip_think(resp.content),
                     "tool_calls": [
                         {"id": tc["id"], "type": "function",
                          "function": {"name": tc["name"],
@@ -109,7 +126,7 @@ class SqlAgentTarget:
                         "content": record.result if record.ok else f"ERROR: {record.error}",
                     })
             else:
-                final_answer = resp.content
+                final_answer = _strip_think(resp.content)
                 messages.append({"role": "assistant", "content": final_answer})
                 break
         else:

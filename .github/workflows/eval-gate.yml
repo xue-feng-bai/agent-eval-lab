@@ -20,7 +20,7 @@ jobs:
 
       # 核心零第三方依赖，无需 pip install
 
-      - name: 单元测试（84 个）
+      - name: 单元测试（94 个）
         run: python3 -m unittest discover -s tests
 
       - name: 构建沙箱数据库
