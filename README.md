@@ -115,7 +115,7 @@ python3 -m agenteval.cli view <run_id> --out reports/local_run.html
 python3 -m agenteval.cli gate <run_id>
 ```
 
-你也可以运行一个**故意带缺陷的 Target**，观察框架如何定位并阻断它：
+也可以运行一个**故意带缺陷的 Target**，观察框架如何定位并阻断它：
 
 ```bash
 python3 -m agenteval.cli run \
@@ -177,7 +177,7 @@ python3 -m agenteval.cli gate <flawed_run_id>  # 预期退出码 1
 
 ### 路径 A：配置化接入 HTTP Agent
 
-如果你的 Agent 已经有 HTTP API，只需复制并修改 [`configs/http_agent.example.json`](configs/http_agent.example.json)，配置请求体模板和响应字段映射，然后运行：
+对于已有 HTTP API 的 Agent，只需复制并修改 [`configs/http_agent.example.json`](configs/http_agent.example.json)，配置请求体模板和响应字段映射，然后运行：
 
 ```bash
 python3 -m agenteval.cli run \
@@ -258,7 +258,6 @@ agent-eval-lab/
 | [`docs/judge_calibration.md`](docs/judge_calibration.md) | Judge 人工校准与 Kappa 解读 |
 | [`docs/ci_gate.md`](docs/ci_gate.md) | 门禁配置、CI 集成与阈值调整 |
 | [`docs/extending.md`](docs/extending.md) | HTTP 接入与自定义 Target 迁移指南 |
-| [`docs/resume_guide.md`](docs/resume_guide.md) | 项目亮点、简历表达与面试答题框架 |
 | [`experiments/regression_demo.md`](experiments/regression_demo.md) | Mock 缺陷注入、diff、gate、harvest 全流程 |
 | [`experiments/model_comparison.md`](experiments/model_comparison.md) | MiniMax-M1 / M3 质量、成本、延迟对比 |
 
