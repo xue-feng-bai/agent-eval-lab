@@ -48,20 +48,20 @@ Case → Harness → Target → Trace → Graders → Metrics → Gate
 
 ```mermaid
 flowchart LR
-    CASE[分层评测集<br/>67 Cases] --> HARNESS[Harness<br/>隔离 Trial / Trace / 重试]
-    HARNESS --> TARGET[Target Protocol]
+    CASE["分层评测集<br/>67 Cases"] --> HARNESS["Harness<br/>隔离 Trial / Trace / 重试"]
+    HARNESS --> TARGET["Target Protocol"]
 
-    TARGET --> SQL[sql_agent<br/>ReAct + OpenAI 兼容 LLM]
-    TARGET --> HTTP[http_agent<br/>配置化外部 API]
-    TARGET --> MOCK[mock:good / mock:flawed<br/>确定性演示]
+    TARGET --> SQL["sql_agent<br/>ReAct + OpenAI 兼容 LLM"]
+    TARGET --> HTTP["http_agent<br/>配置化外部 API"]
+    TARGET --> MOCK["mock:good / mock:flawed<br/>确定性演示"]
 
-    HARNESS --> TRACE[Trace Store<br/>JSONL + 元数据快照]
-    TRACE --> GRADERS[Graders<br/>Rules / SQL / Judge / Human]
-    GRADERS --> METRICS[Metrics<br/>pass@1 / pass^k / CI / Cost / Latency]
-    METRICS --> DIFF[Run Diff<br/>指标 delta + Case 翻转]
-    METRICS --> GATE[Quality Gate<br/>阈值 + 基线回归]
-    METRICS --> REPORT[Report / Viewer]
-    GRADERS --> HARVEST[Harvest<br/>失败 → 回归草稿]
+    HARNESS --> TRACE["Trace Store<br/>JSONL + 元数据快照"]
+    TRACE --> GRADERS["Graders<br/>Rules / SQL / Judge / Human"]
+    GRADERS --> METRICS["Metrics<br/>pass@1 / pass^k / CI / Cost / Latency"]
+    METRICS --> DIFF["Run Diff<br/>指标 delta + Case 翻转"]
+    METRICS --> GATE["Quality Gate<br/>阈值 + 基线回归"]
+    METRICS --> REPORT["Report / Viewer"]
+    GRADERS --> HARVEST["Harvest<br/>失败 → 回归草稿"]
     HARVEST --> CASE
 ```
 
