@@ -63,8 +63,7 @@ agent-eval-lab/
 │   ├── failure_taxonomy.md    # 失败分类法（reason codes 定义与示例）
 │   ├── judge_calibration.md   # LLM Judge 人工校准流程（一致率/Kappa）
 │   ├── ci_gate.md             # 门禁与 CI 集成
-│   ├── extending.md           # 迁移指南：如何评测你自己的 Agent
-│   └── resume_guide.md        # 如何在简历/面试中讲这个项目
+│   └── extending.md           # 迁移指南：如何评测自己的 Agent
 ├── agenteval/                 # 框架核心包（与被测对象无关）
 │   ├── __init__.py
 │   ├── cli.py                 # 统一命令行入口
@@ -288,7 +287,7 @@ JUDGE_MODEL=
 
 ## 14. 文档清单（交付物的一部分）
 
-README.md（含 mermaid 架构图、Quickstart、示例结果表）＋ docs/ 七篇＋ experiments/ 两篇实验实录＋本 PLAN.md。文档质量与代码同等对待：每个设计决策写明"为什么"。
+README.md（含 mermaid 架构图、Quickstart、示例结果表）＋ docs/ 六篇＋ experiments/ 两篇实验实录＋本 PLAN.md。文档质量与代码同等对待：每个设计决策写明"为什么"。
 
 ## 15. 测试策略
 
@@ -308,7 +307,6 @@ unittest 风格（pytest 亦可跑）：
 | M1 | 沙箱库 + 种子数据 + 数据字典 + 67 条评测集 + lint | `test_dataset` 全绿，参考 SQL 全部可执行 |
 | M2 | LLM 客户端 + 三个 Target + 四类评分器 + Harness + 指标 + 注册表 + 报告 + Viewer + harvest + CLI 全部命令 | `unittest` 全绿；mock good/flawed 端到端跑通；示例报告与 HTML 生成 |
 | M3 | CI workflow + README + 全部 docs + 回归演示实录 + LICENSE + 收尾 | DoD 清单逐项核对 |
-| M4 | 简历项目经历文档 | 交付 `简历-项目经历.md` |
 
 ## 17. Definition of Done（拿得出手的标准）
 
@@ -317,7 +315,7 @@ unittest 风格（pytest 亦可跑）：
 3. 67 条用例全部通过 lint，参考 SQL 全部可执行；
 4. mock:good 过门禁，mock:flawed 被门禁拦截（有实录）；
 5. 示例 Markdown 报告 + 示例 HTML Viewer 已生成并提交；
-6. README 讲清故事、架构、Quickstart、结果；docs 七篇齐全；
+6. README 讲清故事、架构、Quickstart、结果；docs 六篇齐全；
 7. .env.example 完整、注释清晰、无真实密钥；.gitignore 覆盖 .env 与 runs/；
 8. 框架迁移路径真实可用：http_agent Target + extending.md 走查通过。
 
