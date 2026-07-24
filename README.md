@@ -3,12 +3,15 @@
 > 把 Agent 的回答，从“看起来合理”变成“可复现、可解释、可阻断”的质量信号。
 
 [![CI](https://github.com/xue-feng-bai/agent-eval-lab/actions/workflows/eval-gate.yml/badge.svg)](https://github.com/xue-feng-bai/agent-eval-lab/actions/workflows/eval-gate.yml)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Trace%20Viewer-0ea5e9)](https://xue-feng-bai.github.io/agent-eval-lab/)
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-94%20passed-2ea44f)
 ![Runtime](https://img.shields.io/badge/runtime%20dependencies-0-2ea44f)
 ![License](https://img.shields.io/badge/license-MIT-64748b)
 
 AgentEval Lab 是一个**与被测 Agent 解耦的评测与发布门禁框架**。它把评测集、沙箱、执行轨迹、确定性评分、LLM Judge、人工校准、实验对比和 CI Gate 组织成一条可追溯的质量流水线。
+
+[在线 Demo：Trace Viewer](https://xue-feng-bai.github.io/agent-eval-lab/) · [查看示例 HTML](reports/example_run.html)
 
 项目的第一个完整实践是 Text-to-SQL 数据分析 Agent：针对最容易“答得像对的、实际上错的”场景，验证它是否真正遵守业务口径、正确使用工具、抵御危险请求，并在模型或 Prompt 变更后自动发现回归。
 
